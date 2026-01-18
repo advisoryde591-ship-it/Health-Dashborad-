@@ -194,7 +194,11 @@ Be encouraging, specific to their data, and suggest one actionable tip for today
 
     async def detect_screenshot_type(self, image_data: bytes, filename: str) -> str:
         """Detect the type of health screenshot."""
+        print(f"detect_screenshot_type called, vision_model exists: {self.vision_model is not None}")
+        print(f"API key present: {bool(self.api_key)}")
+
         if not self.vision_model:
+            print("ERROR: vision_model is None - GEMINI_API_KEY likely not set")
             return "unknown"
 
         prompt = """Analyze this health app screenshot and identify which type it is.
@@ -217,8 +221,10 @@ Respond with ONLY one of these exact words: whoop_recovery, whoop_sleep, whoop_d
 
         try:
             image = self._bytes_to_image(image_data)
+            print(f"Sending image to Gemini for detection...")
             response = self.vision_model.generate_content([prompt, image])
             result = response.text.strip().lower()
+            print(f"Gemini raw response: '{result}'")
 
             # Normalize the response
             if "recovery" in result:
