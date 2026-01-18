@@ -6,15 +6,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from app.services.telegram_bot import TelegramBotService
-from app.services.claude_ai import ClaudeAIService
+from app.services.gemini_ai import GeminiAIService
 
 
 def main():
     """Run the Telegram bot."""
     print("Starting Health Dashboard Telegram Bot...")
 
-    claude_service = ClaudeAIService()
-    bot_service = TelegramBotService(claude_service=claude_service)
+    gemini_service = GeminiAIService()
+    bot_service = TelegramBotService(gemini_service=gemini_service)
 
     bot_service.run_bot()
 
