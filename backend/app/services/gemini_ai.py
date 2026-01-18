@@ -13,7 +13,7 @@ class GeminiAIService:
     def __init__(self):
         # Read directly from environment
         self.api_key = os.environ.get("GEMINI_API_KEY", "")
-        self.model_name = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
+        self.model_name = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash-latest")
         self.model = None
         self.vision_model = None
         self.chat_sessions = {}  # Store chat sessions by user_id
