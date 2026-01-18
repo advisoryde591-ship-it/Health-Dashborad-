@@ -2,20 +2,28 @@
 import anthropic
 import base64
 import json
+import os
 import re
 from typing import Optional
 from datetime import date
-from ..config import get_settings
-
-settings = get_settings()
 
 
 class ClaudeAIService:
     """Service for interacting with Claude AI for image analysis and chat."""
 
     def __init__(self):
-        self.client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-        self.model = settings.CLAUDE_MODEL
+        # Read directly from environment to avoid caching issues
+        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+        model = os.environ.get("CLAUDE_MODEL", "claude-3-5-sonnet-20241022")
+
+        print(f"Claude API key present: {bool(api_key)}")
+        print(f"Claude model: {model}")
+
+        if not api_key:
+            raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
+
+        self.client = anthropic.Anthropic(api_key=api_key)
+        self.model = model
 
     def _encode_image(self, image_data: bytes) -> str:
         """Encode image bytes to base64."""
