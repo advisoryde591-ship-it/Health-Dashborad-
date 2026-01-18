@@ -342,10 +342,10 @@ class TelegramBotService:
         await update.message.reply_text(response, parse_mode="Markdown")
 
     async def _process_photo(self, update: Update):
-        """Process a photo upload - analyze with Claude AI."""
-        if not self.claude_service:
+        """Process a photo upload - analyze with Gemini AI."""
+        if not self.gemini_service:
             await update.message.reply_text(
-                "Image analysis is not available. Please configure ANTHROPIC_API_KEY."
+                "Image analysis is not available. Please configure GEMINI_API_KEY."
             )
             return
 
@@ -363,23 +363,23 @@ class TelegramBotService:
             image_data = bytes(photo_bytes)
             filename = f"telegram_photo_{photo.file_id}.jpg"
 
-            # Detect screenshot type
-            screenshot_type = await self.claude_service.detect_screenshot_type(
+            # Detect screenshot type using Gemini
+            screenshot_type = await self.gemini_service.detect_screenshot_type(
                 image_data, filename
             )
 
             # Analyze based on type
             data = {}
             if screenshot_type == "whoop_recovery":
-                data = await self.claude_service.analyze_whoop_recovery(image_data, filename)
+                data = await self.gemini_service.analyze_whoop_recovery(image_data, filename)
             elif screenshot_type == "whoop_sleep":
-                data = await self.claude_service.analyze_whoop_sleep(image_data, filename)
+                data = await self.gemini_service.analyze_whoop_sleep(image_data, filename)
             elif screenshot_type == "whoop_dashboard":
-                data = await self.claude_service.analyze_whoop_dashboard(image_data, filename)
+                data = await self.gemini_service.analyze_whoop_dashboard(image_data, filename)
             elif screenshot_type == "scale":
-                data = await self.claude_service.analyze_scale(image_data, filename)
+                data = await self.gemini_service.analyze_scale(image_data, filename)
             elif screenshot_type == "apple_workout":
-                data = await self.claude_service.analyze_apple_workout(image_data, filename)
+                data = await self.gemini_service.analyze_apple_workout(image_data, filename)
             else:
                 await update.message.reply_text(
                     f"I detected this as: {screenshot_type}\n"
@@ -406,28 +406,21 @@ class TelegramBotService:
             print("Telegram bot token not configured")
             return
 
-        # Initialize services
+        # Initialize Gemini service (used for both chat and images)
         from .gemini_ai import GeminiAIService
-        from .claude_ai import ClaudeAIService
 
         try:
             self.gemini_service = GeminiAIService()
-            print("Gemini AI initialized")
+            print("Gemini AI initialized for chat and image analysis")
         except Exception as e:
             print(f"Gemini not available: {e}")
-
-        try:
-            self.claude_service = ClaudeAIService()
-            print("Claude AI initialized")
-        except Exception as e:
-            print(f"Claude not available: {e}")
 
         self.application = Application.builder().token(self.bot_token).build()
         self.setup_handlers(self.application)
 
-        print("Starting Telegram bot with AI support...")
-        print("- Chat: Gemini" if self.gemini_service else "- Chat: Basic mode")
-        print("- Images: Claude" if self.claude_service else "- Images: Disabled")
+        print("Starting Telegram bot...")
+        print("- Chat: Gemini" if self.gemini_service else "- Chat: Disabled")
+        print("- Images: Gemini" if self.gemini_service else "- Images: Disabled")
         self.application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 

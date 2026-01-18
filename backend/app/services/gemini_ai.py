@@ -1,19 +1,25 @@
-"""Gemini AI service for conversational chat."""
+"""Gemini AI service for conversational chat and image analysis."""
 import google.generativeai as genai
+import json
+import os
 from typing import Optional
-from ..config import get_settings
-
-settings = get_settings()
+from PIL import Image
+import io
 
 
 class GeminiAIService:
-    """Service for conversational AI using Google Gemini."""
+    """Service for conversational AI and image analysis using Google Gemini."""
 
     def __init__(self):
-        self.api_key = settings.GEMINI_API_KEY
-        self.model_name = settings.GEMINI_MODEL
+        # Read directly from environment
+        self.api_key = os.environ.get("GEMINI_API_KEY", "")
+        self.model_name = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
         self.model = None
+        self.vision_model = None
         self.chat_sessions = {}  # Store chat sessions by user_id
+
+        print(f"Gemini API key present: {bool(self.api_key)}")
+        print(f"Gemini model: {self.model_name}")
 
         if self.api_key:
             genai.configure(api_key=self.api_key)
@@ -21,6 +27,8 @@ class GeminiAIService:
                 model_name=self.model_name,
                 system_instruction=self._get_system_prompt(),
             )
+            # Vision model for image analysis (no system instruction)
+            self.vision_model = genai.GenerativeModel(model_name=self.model_name)
 
     def _get_system_prompt(self) -> str:
         """Get the system prompt for the health assistant."""
@@ -179,3 +187,113 @@ Be encouraging, specific to their data, and suggest one actionable tip for today
         except Exception as e:
             print(f"Gemini motivation error: {e}")
             return "Good morning! Every day is a chance to get closer to your goals. Let's make today count!"
+
+    def _bytes_to_image(self, image_data: bytes) -> Image.Image:
+        """Convert bytes to PIL Image."""
+        return Image.open(io.BytesIO(image_data))
+
+    async def detect_screenshot_type(self, image_data: bytes, filename: str) -> str:
+        """Detect the type of health screenshot."""
+        if not self.vision_model:
+            return "unknown"
+
+        prompt = """Analyze this health app screenshot and identify which type it is.
+
+Possible types:
+- whoop_recovery: Shows recovery percentage, HRV, resting heart rate, respiratory rate
+- whoop_sleep: Shows sleep stages (awake, light, deep/SWS, REM), sleep duration
+- whoop_dashboard: Shows daily metrics like weight, steps, calories, HR zones
+- scale: Shows body composition (weight, body fat %, muscle mass, BMI, bone mass, body water)
+- apple_workout: Shows workout details (activity type, duration, calories, heart rate)
+
+Respond with ONLY the type name, nothing else."""
+
+        try:
+            image = self._bytes_to_image(image_data)
+            response = self.vision_model.generate_content([prompt, image])
+            return response.text.strip().lower()
+        except Exception as e:
+            print(f"Gemini screenshot detection error: {e}")
+            return "unknown"
+
+    async def analyze_whoop_recovery(self, image_data: bytes, filename: str) -> dict:
+        """Extract data from Whoop recovery screenshot."""
+        prompt = """Analyze this Whoop recovery screenshot and extract the following metrics.
+Return a JSON object with these fields (use null if not visible):
+
+{"recovery_score": <number 0-100>, "hrv": <number in ms>, "resting_heart_rate": <number in BPM>, "respiratory_rate": <number>, "sleep_performance": <number 0-100>}
+
+Return ONLY the JSON object, no other text or markdown."""
+
+        return await self._analyze_image(image_data, prompt)
+
+    async def analyze_whoop_sleep(self, image_data: bytes, filename: str) -> dict:
+        """Extract data from Whoop sleep screenshot."""
+        prompt = """Analyze this Whoop sleep screenshot and extract the following metrics.
+Return a JSON object with these fields (use null if not visible):
+
+{"total_sleep_hours": <decimal number>, "awake_minutes": <number>, "awake_percentage": <number>, "light_sleep_minutes": <number>, "light_sleep_percentage": <number>, "deep_sleep_minutes": <number>, "deep_sleep_percentage": <number>, "rem_sleep_minutes": <number>, "rem_sleep_percentage": <number>}
+
+Convert time formats like "3:24" to minutes (204 minutes).
+Return ONLY the JSON object, no other text or markdown."""
+
+        return await self._analyze_image(image_data, prompt)
+
+    async def analyze_whoop_dashboard(self, image_data: bytes, filename: str) -> dict:
+        """Extract data from Whoop dashboard screenshot."""
+        prompt = """Analyze this Whoop dashboard screenshot and extract the following metrics.
+Return a JSON object with these fields (use null if not visible):
+
+{"weight_kg": <number>, "hrv": <number>, "resting_heart_rate": <number>, "steps": <number>, "calories_burned": <number>}
+
+Convert time formats like "1:36" to minutes (96 minutes).
+Return ONLY the JSON object, no other text or markdown."""
+
+        return await self._analyze_image(image_data, prompt)
+
+    async def analyze_scale(self, image_data: bytes, filename: str) -> dict:
+        """Extract data from smart scale screenshot."""
+        prompt = """Analyze this smart scale/body composition screenshot and extract the following metrics.
+Return a JSON object with these fields (use null if not visible):
+
+{"weight_kg": <number>, "bmi": <number>, "body_fat_percentage": <number>, "skeletal_muscle_mass_kg": <number>, "bone_mass_kg": <number>, "body_water_percentage": <number>}
+
+Return ONLY the JSON object, no other text or markdown."""
+
+        return await self._analyze_image(image_data, prompt)
+
+    async def analyze_apple_workout(self, image_data: bytes, filename: str) -> dict:
+        """Extract data from Apple Watch workout screenshot."""
+        prompt = """Analyze this Apple Watch/Fitness workout screenshot and extract the following metrics.
+Return a JSON object with these fields (use null if not visible):
+
+{"workout_type": <string like "Indoor Cycle">, "duration_minutes": <number>, "active_calories": <number>, "total_calories": <number>, "avg_heart_rate": <number>, "effort_label": <string like "Easy", "Moderate">}
+
+Return ONLY the JSON object, no other text or markdown."""
+
+        return await self._analyze_image(image_data, prompt)
+
+    async def _analyze_image(self, image_data: bytes, prompt: str) -> dict:
+        """Generic image analysis helper."""
+        if not self.vision_model:
+            return {"error": "Gemini not configured"}
+
+        try:
+            image = self._bytes_to_image(image_data)
+            response = self.vision_model.generate_content([prompt, image])
+            text = response.text.strip()
+
+            # Clean up response if needed
+            if text.startswith("```"):
+                text = text.split("```")[1]
+                if text.startswith("json"):
+                    text = text[4:]
+            text = text.strip()
+
+            return json.loads(text)
+        except json.JSONDecodeError as e:
+            print(f"Gemini JSON parse error: {e}")
+            return {"error": "Failed to parse response"}
+        except Exception as e:
+            print(f"Gemini image analysis error: {e}")
+            return {"error": str(e)}
