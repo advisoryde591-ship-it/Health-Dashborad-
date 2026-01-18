@@ -24,6 +24,9 @@ python-telegram-bot==20.7
 # Claude AI
 anthropic==0.18.1
 
+# Gemini AI (for conversational chat)
+google-generativeai==0.4.0
+
 # Utilities
 python-dotenv==1.0.0
 pydantic==2.5.3
