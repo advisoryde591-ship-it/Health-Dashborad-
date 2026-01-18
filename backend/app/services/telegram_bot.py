@@ -1,5 +1,6 @@
 """Telegram bot for food logging, daily summaries, and conversational AI."""
 import asyncio
+import io
 from datetime import date, datetime
 from typing import Optional
 from telegram import Update, Bot
@@ -13,6 +14,65 @@ from telegram.ext import (
 from ..config import get_settings
 
 settings = get_settings()
+
+
+def format_metrics_response(screenshot_type: str, data: dict) -> str:
+    """Format extracted metrics into a readable Telegram message."""
+    if "error" in data:
+        return f"Could not extract data: {data.get('error', 'Unknown error')}"
+
+    if screenshot_type == "whoop_recovery":
+        return (
+            f"*Recovery Data*\n\n"
+            f"Recovery Score: {data.get('recovery_score', '?')}%\n"
+            f"HRV: {data.get('hrv', '?')} ms\n"
+            f"Resting HR: {data.get('resting_heart_rate', '?')} BPM\n"
+            f"Respiratory Rate: {data.get('respiratory_rate', '?')}\n"
+            f"Sleep Performance: {data.get('sleep_performance', '?')}%"
+        )
+    elif screenshot_type == "whoop_sleep":
+        return (
+            f"*Sleep Data*\n\n"
+            f"Total Sleep: {data.get('total_sleep_hours', '?')} hours\n"
+            f"Deep Sleep: {data.get('deep_sleep_minutes', '?')} min ({data.get('deep_sleep_percentage', '?')}%)\n"
+            f"REM Sleep: {data.get('rem_sleep_minutes', '?')} min ({data.get('rem_sleep_percentage', '?')}%)\n"
+            f"Light Sleep: {data.get('light_sleep_minutes', '?')} min ({data.get('light_sleep_percentage', '?')}%)\n"
+            f"Awake: {data.get('awake_minutes', '?')} min"
+        )
+    elif screenshot_type == "whoop_dashboard":
+        return (
+            f"*Dashboard Data*\n\n"
+            f"Weight: {data.get('weight_kg', '?')} kg\n"
+            f"Steps: {data.get('steps', '?')}\n"
+            f"Calories Burned: {data.get('calories_burned', '?')}\n"
+            f"HRV: {data.get('hrv', '?')} ms\n"
+            f"Resting HR: {data.get('resting_heart_rate', '?')} BPM"
+        )
+    elif screenshot_type == "scale":
+        weight = data.get('weight_kg', '?')
+        target = settings.TARGET_WEIGHT_KG
+        diff = ""
+        if weight != '?' and weight is not None:
+            diff = f" ({weight - target:+.1f} from goal)"
+        return (
+            f"*Body Composition*\n\n"
+            f"Weight: {weight} kg{diff}\n"
+            f"Body Fat: {data.get('body_fat_percentage', '?')}%\n"
+            f"Muscle Mass: {data.get('skeletal_muscle_mass_kg', '?')} kg\n"
+            f"BMI: {data.get('bmi', '?')}\n"
+            f"Body Water: {data.get('body_water_percentage', '?')}%"
+        )
+    elif screenshot_type == "apple_workout":
+        return (
+            f"*Workout*\n\n"
+            f"Type: {data.get('workout_type', '?')}\n"
+            f"Duration: {data.get('duration_minutes', '?')} min\n"
+            f"Calories: {data.get('total_calories', '?')} kcal\n"
+            f"Avg HR: {data.get('avg_heart_rate', '?')} BPM\n"
+            f"Effort: {data.get('effort_label', '?')}"
+        )
+    else:
+        return f"*Screenshot Analyzed*\n\nData: {data}"
 
 
 class TelegramBotService:
@@ -65,20 +125,21 @@ class TelegramBotService:
         async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             """Handle /start command."""
             welcome_msg = (
-                "Hey! I'm your Health Buddy! \n\n"
+                "Hey! I'm your Health Buddy!\n\n"
                 "I can help you:\n"
+                "- Analyze health screenshots (Whoop, Scale, Apple Watch)\n"
                 "- Track what you eat (just tell me!)\n"
                 "- Answer health questions\n"
-                "- Give you motivation\n"
-                "- Show your progress\n\n"
+                "- Give you motivation\n\n"
+                "*Just send me:*\n"
+                "- A screenshot to analyze\n"
+                "- What you ate to log food\n"
+                "- Any health question!\n\n"
                 "*Commands:*\n"
                 "/log <food> - Log a meal\n"
                 "/today - Today's summary\n"
-                "/weight - Weight progress\n"
-                "/chat - Have a conversation\n"
                 "/clear - Clear chat history\n"
-                "/help - Show help\n\n"
-                "Or just chat with me naturally!"
+                "/help - Show help"
             )
             await update.message.reply_text(welcome_msg, parse_mode="Markdown")
 
@@ -86,21 +147,21 @@ class TelegramBotService:
             """Handle /help command."""
             help_msg = (
                 "*Health Buddy Help*\n\n"
+                "*Screenshot Analysis:*\n"
+                "Send me screenshots from:\n"
+                "- Whoop (Recovery, Sleep, Dashboard)\n"
+                "- Smart Scale (body composition)\n"
+                "- Apple Watch (workouts)\n\n"
                 "*Food Logging:*\n"
                 "Just tell me what you ate:\n"
                 "- 'Had eggs and toast for breakfast'\n"
                 "- 'Lunch was a chicken salad'\n"
                 "- '/log pizza and salad'\n\n"
-                "*Chat with me:*\n"
-                "Ask me anything about health, nutrition, or fitness!\n"
-                "- 'How can I improve my sleep?'\n"
-                "- 'What should I eat before workout?'\n"
-                "- 'Give me motivation!'\n\n"
+                "*Chat:*\n"
+                "Ask me anything about health!\n\n"
                 "*Commands:*\n"
-                "/today - Full health summary\n"
-                "/weight - Weight trend\n"
-                "/calories - Calorie summary\n"
-                "/clear - Reset our conversation\n"
+                "/today - Today's summary\n"
+                "/clear - Reset conversation\n"
             )
             await update.message.reply_text(help_msg, parse_mode="Markdown")
 
@@ -169,6 +230,10 @@ class TelegramBotService:
                 # This is a general chat message - use Gemini
                 await self._process_chat(update, message_text, user_id)
 
+        async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            """Handle photo uploads - analyze health screenshots with Claude."""
+            await self._process_photo(update)
+
         # Register handlers
         application.add_handler(CommandHandler("start", start_command))
         application.add_handler(CommandHandler("help", help_command))
@@ -178,6 +243,9 @@ class TelegramBotService:
         application.add_handler(CommandHandler("clear", clear_command))
         application.add_handler(
             MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
+        )
+        application.add_handler(
+            MessageHandler(filters.PHOTO, handle_photo)
         )
 
     async def _process_chat(
@@ -272,6 +340,62 @@ class TelegramBotService:
         )
 
         await update.message.reply_text(response, parse_mode="Markdown")
+
+    async def _process_photo(self, update: Update):
+        """Process a photo upload - analyze with Claude AI."""
+        if not self.claude_service:
+            await update.message.reply_text(
+                "Image analysis is not available. Please configure ANTHROPIC_API_KEY."
+            )
+            return
+
+        try:
+            # Send typing indicator
+            await update.message.chat.send_action("typing")
+            await update.message.reply_text("Analyzing your screenshot...")
+
+            # Get the largest photo (best quality)
+            photo = update.message.photo[-1]
+            file = await photo.get_file()
+
+            # Download the photo
+            photo_bytes = await file.download_as_bytearray()
+            image_data = bytes(photo_bytes)
+            filename = f"telegram_photo_{photo.file_id}.jpg"
+
+            # Detect screenshot type
+            screenshot_type = await self.claude_service.detect_screenshot_type(
+                image_data, filename
+            )
+
+            # Analyze based on type
+            data = {}
+            if screenshot_type == "whoop_recovery":
+                data = await self.claude_service.analyze_whoop_recovery(image_data, filename)
+            elif screenshot_type == "whoop_sleep":
+                data = await self.claude_service.analyze_whoop_sleep(image_data, filename)
+            elif screenshot_type == "whoop_dashboard":
+                data = await self.claude_service.analyze_whoop_dashboard(image_data, filename)
+            elif screenshot_type == "scale":
+                data = await self.claude_service.analyze_scale(image_data, filename)
+            elif screenshot_type == "apple_workout":
+                data = await self.claude_service.analyze_apple_workout(image_data, filename)
+            else:
+                await update.message.reply_text(
+                    f"I detected this as: {screenshot_type}\n"
+                    "I support: Whoop (recovery/sleep/dashboard), Scale, Apple Watch workouts"
+                )
+                return
+
+            # Format and send response
+            response = format_metrics_response(screenshot_type, data)
+            await update.message.reply_text(response, parse_mode="Markdown")
+
+        except Exception as e:
+            print(f"Error processing photo: {e}")
+            await update.message.reply_text(
+                "Sorry, I couldn't analyze that image. Please try again with a clear screenshot."
+            )
 
     def run_bot(self):
         """Run the Telegram bot (blocking)."""
