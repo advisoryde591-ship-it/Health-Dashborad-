@@ -200,18 +200,39 @@ Be encouraging, specific to their data, and suggest one actionable tip for today
         prompt = """Analyze this health app screenshot and identify which type it is.
 
 Possible types:
-- whoop_recovery: Shows recovery percentage, HRV, resting heart rate, respiratory rate
-- whoop_sleep: Shows sleep stages (awake, light, deep/SWS, REM), sleep duration
-- whoop_dashboard: Shows daily metrics like weight, steps, calories, HR zones
-- scale: Shows body composition (weight, body fat %, muscle mass, BMI, bone mass, body water)
-- apple_workout: Shows workout details (activity type, duration, calories, heart rate)
+- whoop_recovery: Shows recovery percentage (like 86%), HRV, resting heart rate
+- whoop_sleep: Shows sleep data, sleep stages, hours of sleep
+- whoop_dashboard: Shows daily overview with weight, steps, calories, heart rate zones
+- scale: Shows body composition - weight, body fat %, muscle mass, BMI
+- apple_workout: Shows workout from Apple Watch - activity type, duration, calories burned
 
-Respond with ONLY the type name, nothing else."""
+Look at the main content of the image. If you see:
+- A recovery score percentage → whoop_recovery
+- Sleep hours and stages → whoop_sleep
+- Weight/steps/calories overview → whoop_dashboard
+- Body fat/muscle/BMI numbers → scale
+- Workout activity details → apple_workout
+
+Respond with ONLY one of these exact words: whoop_recovery, whoop_sleep, whoop_dashboard, scale, apple_workout"""
 
         try:
             image = self._bytes_to_image(image_data)
             response = self.vision_model.generate_content([prompt, image])
-            return response.text.strip().lower()
+            result = response.text.strip().lower()
+
+            # Normalize the response
+            if "recovery" in result:
+                return "whoop_recovery"
+            elif "sleep" in result:
+                return "whoop_sleep"
+            elif "dashboard" in result or "overview" in result:
+                return "whoop_dashboard"
+            elif "scale" in result or "body" in result or "composition" in result:
+                return "scale"
+            elif "workout" in result or "apple" in result or "exercise" in result:
+                return "apple_workout"
+
+            return result
         except Exception as e:
             print(f"Gemini screenshot detection error: {e}")
             return "unknown"
