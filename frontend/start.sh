@@ -2,6 +2,10 @@
 # Set the port - use PORT env var or default to 80
 PORT=${PORT:-80}
 
+echo "=== Starting Health Dashboard Frontend ==="
+echo "PORT environment variable: ${PORT}"
+echo "Creating nginx config..."
+
 # Create a new nginx config with the correct port
 cat > /etc/nginx/conf.d/default.conf << EOF
 server {
