@@ -392,9 +392,12 @@ class TelegramBotService:
             await update.message.reply_text(response, parse_mode="Markdown")
 
         except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
             print(f"Error processing photo: {e}")
+            print(f"Full traceback: {error_details}")
             await update.message.reply_text(
-                "Sorry, I couldn't analyze that image. Please try again with a clear screenshot."
+                f"Analysis error: {str(e)[:100]}\nPlease try again."
             )
 
     def run_bot(self):

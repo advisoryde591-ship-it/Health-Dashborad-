@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     # Claude AI (for image analysis)
     ANTHROPIC_API_KEY: str = ""
-    CLAUDE_MODEL: str = "claude-sonnet-4-20250514"
+    CLAUDE_MODEL: str = "claude-3-5-sonnet-20241022"
 
     # Gemini AI (for conversational chat)
     GEMINI_API_KEY: str = ""
