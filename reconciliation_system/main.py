@@ -17,7 +17,7 @@ from datetime import datetime
 
 import pandas as pd
 
-from parsers import CSVParser, ExcelParser, PDFParser
+from parsers import CSVParser, ExcelParser, PDFParser, PDF_PARSER_AVAILABLE
 from processors import Normalizer, CurrencyConverter, TransactionMatcher
 from reporters import ExcelReporter
 
@@ -53,7 +53,7 @@ class ReconciliationSystem:
         # Initialize components
         self.csv_parser = CSVParser()
         self.excel_parser = ExcelParser()
-        self.pdf_parser = PDFParser()
+        self.pdf_parser = PDFParser() if (PDF_PARSER_AVAILABLE and PDFParser) else None
 
         self.normalizer = Normalizer(self.config_path / 'psp_mappings.json')
         self.currency_converter = CurrencyConverter(self.config_path / 'exchange_rates.json')
@@ -219,7 +219,11 @@ class ReconciliationSystem:
         elif suffix in ['.xlsx', '.xls']:
             return self.excel_parser.parse(file_path)
         elif suffix == '.pdf':
-            return self.pdf_parser.parse(file_path)
+            if self.pdf_parser:
+                return self.pdf_parser.parse(file_path)
+            else:
+                logger.warning("PDF parsing not available. Install pdfplumber.")
+                return None
         else:
             logger.warning(f"Unsupported file type: {suffix}")
             return None

@@ -19,9 +19,9 @@ class PDFParser:
         try:
             import pdfplumber
             self._pdfplumber_available = True
-        except ImportError:
+        except Exception as e:
             logger.warning(
-                "pdfplumber not installed. PDF parsing will be limited. "
+                f"pdfplumber not available: {e}. PDF parsing will be disabled. "
                 "Install with: pip install pdfplumber"
             )
 

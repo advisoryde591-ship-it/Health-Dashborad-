@@ -1,0 +1,26 @@
+2026-01-20 12:19:18,019 - WARNING - pdfplumber not available: No module named 'pdfplumber'. PDF parsing will be disabled. Install with: pip install pdfplumber
+2026-01-20 12:19:18,021 - INFO - Loaded mappings for 5 PSPs
+2026-01-20 12:19:18,022 - INFO - Loaded 20 exchange rates for 2026-01-20
+2026-01-20 12:19:18,022 - INFO - Starting reconciliation for 2026-01-20
+2026-01-20 12:19:18,022 - INFO - Step 1: Parsing PSP/bank files...
+2026-01-20 12:19:18,023 - INFO - Found 2 files in PSP folder
+2026-01-20 12:19:18,024 - INFO - Processing: paypal_2026-01-20.csv
+2026-01-20 12:19:18,028 - INFO - Successfully parsed paypal_2026-01-20.csv with encoding utf-8
+2026-01-20 12:19:18,036 - INFO - Normalized 4 transactions from paypal
+2026-01-20 12:19:18,036 - INFO - Normalized 4 transactions from paypal_2026-01-20.csv
+2026-01-20 12:19:18,036 - INFO - Processing: stripe_2026-01-20.csv
+2026-01-20 12:19:18,038 - INFO - Successfully parsed stripe_2026-01-20.csv with encoding utf-8
+2026-01-20 12:19:18,043 - INFO - Normalized 5 transactions from stripe
+2026-01-20 12:19:18,044 - INFO - Normalized 5 transactions from stripe_2026-01-20.csv
+2026-01-20 12:19:18,044 - INFO - Step 2: Parsing CRM export...
+2026-01-20 12:19:18,045 - INFO - Found 1 files in CRM folder
+2026-01-20 12:19:18,046 - INFO - Processing CRM file: crm_export_2026-01-20.csv
+2026-01-20 12:19:18,048 - INFO - Successfully parsed crm_export_2026-01-20.csv with encoding utf-8
+2026-01-20 12:19:18,051 - INFO - Normalized 8 CRM records
+2026-01-20 12:19:18,052 - INFO - Loaded 8 CRM records
+2026-01-20 12:19:18,052 - INFO - Step 3: Running transaction matching...
+2026-01-20 12:19:18,052 - INFO - Matching 9 PSP transactions against 8 CRM records
+2026-01-20 12:19:18,059 - INFO - Matching complete: 7 matched, 0 mismatches, 2 PSP-only, 1 CRM-only
+2026-01-20 12:19:18,060 - INFO - Step 4: Generating report...
+2026-01-20 12:19:18,407 - INFO - Report generated successfully: /home/user/Health-Dashborad-/reconciliation_system/output/reconciliation_report_2026-01-20.xlsx
+2026-01-20 12:19:18,407 - INFO - Reconciliation complete. Report: /home/user/Health-Dashborad-/reconciliation_system/output/reconciliation_report_2026-01-20.xlsx
