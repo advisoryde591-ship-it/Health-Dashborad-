@@ -1,0 +1,9 @@
+psp_id,expected_date,expected_amount_usd,customer_name,status
+txn_001,2026-01-20,100.00,John Doe,pending
+txn_002,2026-01-20,250.50,Jane Smith,pending
+txn_003,2026-01-20,54.00,Bob Wilson,pending
+txn_005,2026-01-20,150.00,Charlie Davis,pending
+PP_101,2026-01-20,200.00,John Doe,pending
+PP_102,2026-01-20,350.50,Jane Smith,pending
+PP_103,2026-01-20,129.60,Bob Wilson,pending
+PP_105,2026-01-20,500.00,Missing Person,pending

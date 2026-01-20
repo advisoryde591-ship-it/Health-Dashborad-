@@ -1,0 +1,6 @@
+id,created,amount,currency,customer_email,type,status
+txn_001,2026-01-20 10:30:00,10000,USD,john@example.com,charge,succeeded
+txn_002,2026-01-20 11:45:00,25050,USD,jane@example.com,charge,succeeded
+txn_003,2026-01-20 14:20:00,5000,EUR,bob@example.com,charge,succeeded
+txn_004,2026-01-20 15:00:00,7500,GBP,alice@example.com,charge,succeeded
+txn_005,2026-01-20 16:30:00,15000,USD,charlie@example.com,charge,succeeded

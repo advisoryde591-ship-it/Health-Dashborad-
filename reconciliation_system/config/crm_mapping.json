@@ -1,0 +1,11 @@
+{
+  "description": "Mapping for CRM export columns to standard format",
+  "column_mapping": {
+    "psp_id": "psp_id",
+    "expected_date": "expected_date",
+    "expected_amount_usd": "expected_amount_usd",
+    "customer_name": "customer_name",
+    "status": "status"
+  },
+  "notes": "Update the right side values to match your CRM export column names"
+}

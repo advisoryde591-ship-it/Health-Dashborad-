@@ -1,0 +1,82 @@
+{
+  "stripe": {
+    "psp_name": "Stripe",
+    "file_pattern": "stripe*.csv",
+    "date_format": "%Y-%m-%d %H:%M:%S",
+    "column_mapping": {
+      "date": "created",
+      "transaction_id": "id",
+      "amount": "amount",
+      "currency": "currency",
+      "name": "customer_email",
+      "type": "type",
+      "status": "status"
+    },
+    "amount_divisor": 100,
+    "notes": "Stripe amounts are in cents"
+  },
+  "paypal": {
+    "psp_name": "PayPal",
+    "file_pattern": "paypal*.csv",
+    "date_format": "%m/%d/%Y",
+    "column_mapping": {
+      "date": "Date",
+      "transaction_id": "Transaction ID",
+      "amount": "Gross",
+      "currency": "Currency",
+      "name": "Name",
+      "type": "Type",
+      "status": "Status"
+    },
+    "amount_divisor": 1,
+    "notes": "PayPal amounts are in full units"
+  },
+  "wise": {
+    "psp_name": "Wise",
+    "file_pattern": "wise*.csv",
+    "date_format": "%d-%m-%Y",
+    "column_mapping": {
+      "date": "Date",
+      "transaction_id": "TransferWise ID",
+      "amount": "Amount",
+      "currency": "Currency",
+      "name": "Recipient",
+      "type": "Type",
+      "status": "Status"
+    },
+    "amount_divisor": 1,
+    "notes": "Wise/TransferWise transactions"
+  },
+  "bank_generic": {
+    "psp_name": "Bank",
+    "file_pattern": "bank*.csv",
+    "date_format": "%Y-%m-%d",
+    "column_mapping": {
+      "date": "Date",
+      "transaction_id": "Reference",
+      "amount": "Amount",
+      "currency": "Currency",
+      "name": "Description",
+      "type": "Type",
+      "status": "Status"
+    },
+    "amount_divisor": 1,
+    "notes": "Generic bank statement format"
+  },
+  "example_psp": {
+    "psp_name": "Example PSP",
+    "file_pattern": "example*.xlsx",
+    "date_format": "%Y-%m-%d",
+    "column_mapping": {
+      "date": "transaction_date",
+      "transaction_id": "txn_id",
+      "amount": "txn_amount",
+      "currency": "txn_currency",
+      "name": "customer_name",
+      "type": "transaction_type",
+      "status": "transaction_status"
+    },
+    "amount_divisor": 1,
+    "notes": "Template - copy and modify for new PSPs"
+  }
+}
