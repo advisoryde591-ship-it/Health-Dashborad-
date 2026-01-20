@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRD - Automated Reconciliation System</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            color: #333;
+        }
+        h1 {
+            color: #1a1a1a;
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #1e40af;
+            margin-top: 40px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #3b82f6;
+            margin-top: 25px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        code {
+            background-color: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85em;
+        }
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+        .header-info {
+            background-color: #f0f9ff;
+            border-left: 4px solid #2563eb;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background-color: #fef3c7;
+            color: #92400e;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        .diagram {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            overflow-x: auto;
+            font-size: 0.8em;
+            line-height: 1.4;
+        }
+        ul, ol {
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+        @media print {
+            body {
+                padding: 20px;
+            }
+            h2 {
+                page-break-before: auto;
+            }
+            pre, .diagram {
+                white-space: pre-wrap;
+                word-wrap: break-word;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Product Requirements Document (PRD)<br>Automated Reconciliation System</h1>
+
+    <div class="header-info">
+        <strong>Version:</strong> 1.0 &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>Date:</strong> January 2026 &nbsp;&nbsp;|&nbsp;&nbsp;
+        <strong>Status:</strong> <span class="status-badge">Draft</span>
+    </div>
+
+    <h2>1. Executive Summary</h2>
+
+    <h3>Problem Statement</h3>
+    <p>The reconciliation team (1 person) manually downloads files from 50 banks/PSPs daily, reformats them into a standardized Excel sheet, and matches ~150 transactions against CRM records. The most time-consuming part is <strong>matching transactions</strong> to identify discrepancies.</p>
+
+    <h3>Solution</h3>
+    <p>Build an automated reconciliation system that:</p>
+    <ol>
+        <li>Reads files from a local folder (PSP/bank exports + CRM report)</li>
+        <li>Normalizes all formats into a standard structure</li>
+        <li>Converts amounts to USD using daily exchange rates</li>
+        <li>Automatically matches transactions and flags discrepancies</li>
+        <li>Generates a reconciliation report</li>
+    </ol>
+
+    <h3>Success Metrics</h3>
+    <ul>
+        <li>Reduce manual matching time by 80%+</li>
+        <li>Zero missed discrepancies</li>
+        <li>Single consolidated report instead of manual Excel work</li>
+    </ul>
+
+    <h2>2. Scope</h2>
+
+    <h3>Phase 1 (MVP) - Current Scope</h3>
+    <table>
+        <tr>
+            <th>In Scope</th>
+            <th>Out of Scope (Phase 2)</th>
+        </tr>
+        <tr>
+            <td>Read files from local folder</td>
+            <td>API connections to PSPs/banks</td>
+        </tr>
+        <tr>
+            <td>Parse CSV, Excel, PDF formats</td>
+            <td>Direct CRM database connection</td>
+        </tr>
+        <tr>
+            <td>Normalize to standard format</td>
+            <td>Automated file downloads</td>
+        </tr>
+        <tr>
+            <td>Currency conversion (USD)</td>
+            <td>Email/Slack notifications</td>
+        </tr>
+        <tr>
+            <td>Transaction matching</td>
+            <td>User authentication</td>
+        </tr>
+        <tr>
+            <td>Discrepancy report generation</td>
+            <td>Historical trend analysis</td>
+        </tr>
+    </table>
+
+    <h2>3. User Stories</h2>
+
+    <h3>Primary User: Reconciliation Team Member</h3>
+    <ol>
+        <li><strong>As a</strong> reconciliation team member, <strong>I want to</strong> drop all downloaded PSP/bank files into a folder <strong>so that</strong> the system processes them automatically.</li>
+        <li><strong>As a</strong> reconciliation team member, <strong>I want to</strong> see a clear report of matched vs unmatched transactions <strong>so that</strong> I can focus only on investigating problems.</li>
+        <li><strong>As a</strong> reconciliation team member, <strong>I want</strong> amounts converted to USD automatically <strong>so that</strong> I don't have to do manual currency conversion.</li>
+        <li><strong>As a</strong> reconciliation team member, <strong>I want to</strong> know which transactions have amount mismatches <strong>so that</strong> I can investigate fee discrepancies or errors.</li>
+    </ol>
+
+    <h2>4. Functional Requirements</h2>
+
+    <h3>4.1 File Input</h3>
+
+    <h4>Supported Sources</h4>
+    <ul>
+        <li><strong>PSP/Bank files:</strong> CSV, Excel (.xlsx, .xls), PDF (structured bank statements)</li>
+        <li><strong>CRM report:</strong> CSV or Excel export</li>
+    </ul>
+
+    <h4>Folder Structure</h4>
+    <div class="diagram">/reconciliation/
+├── /input/
+│   ├── /psp_files/           # Drop PSP/bank files here
+│   │   ├── stripe_2026-01-20.csv
+│   │   ├── paypal_2026-01-20.xlsx
+│   │   └── bank_statement.pdf
+│   └── /crm_report/          # Drop CRM export here
+│       └── crm_export_2026-01-20.csv
+├── /output/
+│   └── reconciliation_report_2026-01-20.xlsx
+└── /config/
+    ├── psp_mappings.json     # Column mappings per PSP
+    └── exchange_rates.json   # Daily exchange rates</div>
+
+    <h3>4.2 File Parsing & Normalization</h3>
+
+    <h4>Standard Output Format (per transaction)</h4>
+    <table>
+        <tr>
+            <th>Field</th>
+            <th>Description</th>
+            <th>Source</th>
+        </tr>
+        <tr>
+            <td><code>psp_name</code></td>
+            <td>Name of PSP/bank</td>
+            <td>Derived from filename or config</td>
+        </tr>
+        <tr>
+            <td><code>date</code></td>
+            <td>Transaction date</td>
+            <td>Mapped from source</td>
+        </tr>
+        <tr>
+            <td><code>transaction_id</code></td>
+            <td>Unique PSP transaction ID</td>
+            <td>Mapped from source</td>
+        </tr>
+        <tr>
+            <td><code>amount_original</code></td>
+            <td>Original amount</td>
+            <td>Mapped from source</td>
+        </tr>
+        <tr>
+            <td><code>currency_original</code></td>
+            <td>Original currency</td>
+            <td>Mapped from source</td>
+        </tr>
+        <tr>
+            <td><code>amount_usd</code></td>
+            <td>Converted to USD</td>
+            <td>Calculated</td>
+        </tr>
+        <tr>
+            <td><code>name</code></td>
+            <td>Customer/counterparty name</td>
+            <td>Mapped from source</td>
+        </tr>
+        <tr>
+            <td><code>type</code></td>
+            <td>Transaction type</td>
+            <td>Mapped from source</td>
+        </tr>
+        <tr>
+            <td><code>status</code></td>
+            <td>Transaction status</td>
+            <td>Mapped from source</td>
+        </tr>
+    </table>
+
+    <h4>PSP Column Mapping (Configurable)</h4>
+    <p>Each PSP has different column names. System uses a mapping config:</p>
+    <pre><code>{
+  "stripe": {
+    "date": "created_at",
+    "transaction_id": "payment_id",
+    "amount": "amount",
+    "currency": "currency",
+    "name": "customer_name",
+    "type": "type",
+    "status": "status"
+  },
+  "paypal": {
+    "date": "Date",
+    "transaction_id": "Transaction ID",
+    "amount": "Gross",
+    "currency": "Currency",
+    "name": "Name",
+    "type": "Type",
+    "status": "Status"
+  }
+}</code></pre>
+
+    <h3>4.3 Currency Conversion</h3>
+    <ul>
+        <li>Convert all amounts to USD</li>
+        <li>Use daily exchange rates (configurable JSON file or API)</li>
+        <li>Store both original and converted amounts</li>
+    </ul>
+    <pre><code>// exchange_rates.json
+{
+  "date": "2026-01-20",
+  "rates": {
+    "EUR": 1.08,
+    "GBP": 1.27,
+    "ILS": 0.27
+  }
+}</code></pre>
+
+    <h3>4.4 Transaction Matching</h3>
+
+    <h4>Matching Logic</h4>
+    <ol>
+        <li><strong>Primary Key:</strong> PSP <code>transaction_id</code> matches CRM <code>psp_id</code></li>
+        <li><strong>Amount Validation:</strong> Amounts must match within <strong>95%</strong> tolerance (accounts for fees, FX differences)</li>
+    </ol>
+
+    <h4>Match Categories</h4>
+    <table>
+        <tr>
+            <th>Category</th>
+            <th>Condition</th>
+            <th>Action Required</th>
+        </tr>
+        <tr>
+            <td><strong>MATCHED</strong></td>
+            <td>ID matches + Amount within 95%</td>
+            <td>None</td>
+        </tr>
+        <tr>
+            <td><strong>AMOUNT_MISMATCH</strong></td>
+            <td>ID matches + Amount differs &gt;5%</td>
+            <td>Investigate</td>
+        </tr>
+        <tr>
+            <td><strong>PSP_ONLY</strong></td>
+            <td>Transaction in PSP, not in CRM</td>
+            <td>Investigate - unexpected payment</td>
+        </tr>
+        <tr>
+            <td><strong>CRM_ONLY</strong></td>
+            <td>Transaction in CRM, not in PSP</td>
+            <td>Investigate - missing payment</td>
+        </tr>
+    </table>
+
+    <h4>Matching Algorithm</h4>
+    <pre><code>For each PSP transaction:
+  1. Look for CRM record where crm.psp_id == psp.transaction_id
+  2. If found:
+     - Calculate: match_percentage = min(psp_amount, crm_amount) / max(psp_amount, crm_amount)
+     - If match_percentage >= 0.95: Status = MATCHED
+     - Else: Status = AMOUNT_MISMATCH
+  3. If not found:
+     - Status = PSP_ONLY
+
+For each CRM transaction not yet matched:
+  - Status = CRM_ONLY</code></pre>
+
+    <h3>4.5 Output Report</h3>
+
+    <h4>Excel Report Structure</h4>
+
+    <p><strong>Tab 1: Summary</strong></p>
+    <table>
+        <tr>
+            <th>Metric</th>
+            <th>Count</th>
+            <th>Amount (USD)</th>
+        </tr>
+        <tr>
+            <td>Total PSP Transactions</td>
+            <td>150</td>
+            <td>$45,000</td>
+        </tr>
+        <tr>
+            <td>Total CRM Expected</td>
+            <td>148</td>
+            <td>$44,500</td>
+        </tr>
+        <tr>
+            <td>Matched</td>
+            <td>140</td>
+            <td>$42,000</td>
+        </tr>
+        <tr>
+            <td>Amount Mismatch</td>
+            <td>3</td>
+            <td>$1,500</td>
+        </tr>
+        <tr>
+            <td>PSP Only (Unexpected)</td>
+            <td>7</td>
+            <td>$1,500</td>
+        </tr>
+        <tr>
+            <td>CRM Only (Missing)</td>
+            <td>5</td>
+            <td>$1,000</td>
+        </tr>
+    </table>
+
+    <p><strong>Tab 2:</strong> Matched Transactions - All successfully reconciled transactions.</p>
+
+    <p><strong>Tab 3: Discrepancies (PRIORITY)</strong></p>
+    <table>
+        <tr>
+            <th>PSP</th>
+            <th>Date</th>
+            <th>Txn ID</th>
+            <th>PSP Amount</th>
+            <th>CRM Amount</th>
+            <th>Difference</th>
+            <th>Status</th>
+        </tr>
+        <tr>
+            <td>Stripe</td>
+            <td>2026-01-20</td>
+            <td>txn_123</td>
+            <td>$100</td>
+            <td>$92</td>
+            <td>$8 (8%)</td>
+            <td>AMOUNT_MISMATCH</td>
+        </tr>
+        <tr>
+            <td>PayPal</td>
+            <td>2026-01-20</td>
+            <td>PP_456</td>
+            <td>$250</td>
+            <td>-</td>
+            <td>$250</td>
+            <td>PSP_ONLY</td>
+        </tr>
+        <tr>
+            <td>-</td>
+            <td>2026-01-20</td>
+            <td>-</td>
+            <td>-</td>
+            <td>$180</td>
+            <td>$180</td>
+            <td>CRM_ONLY</td>
+        </tr>
+    </table>
+
+    <p><strong>Tab 4:</strong> All PSP Transactions - Complete normalized list from all PSP/bank files.</p>
+    <p><strong>Tab 5:</strong> All CRM Transactions - Complete list from CRM export.</p>
+
+    <h2>5. Technical Architecture</h2>
+
+    <h3>5.1 System Overview</h3>
+    <div class="diagram">┌─────────────────────────────────────────────────────────────────┐
+│                     RECONCILIATION SYSTEM                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐       │
+│  │  FILE        │    │  PARSER      │    │  NORMALIZER  │       │
+│  │  WATCHER     │───▶│  (CSV/XLS/   │───▶│  (Standard   │       │
+│  │              │    │   PDF)       │    │   Format)    │       │
+│  └──────────────┘    └──────────────┘    └──────────────┘       │
+│                                                 │                │
+│                                                 ▼                │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐       │
+│  │  REPORT      │◀───│  MATCHER     │◀───│  CURRENCY    │       │
+│  │  GENERATOR   │    │  ENGINE      │    │  CONVERTER   │       │
+│  │  (Excel)     │    │              │    │              │       │
+│  └──────────────┘    └──────────────┘    └──────────────┘       │
+│         │                                                        │
+│         ▼                                                        │
+│  ┌──────────────┐                                               │
+│  │  OUTPUT      │                                               │
+│  │  FOLDER      │                                               │
+│  └──────────────┘                                               │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘</div>
+
+    <h3>5.2 Technology Stack (Recommended)</h3>
+    <table>
+        <tr>
+            <th>Component</th>
+            <th>Technology</th>
+            <th>Reason</th>
+        </tr>
+        <tr>
+            <td>Language</td>
+            <td>Python 3.11+</td>
+            <td>Best for data processing, file parsing</td>
+        </tr>
+        <tr>
+            <td>CSV/Excel Parsing</td>
+            <td>pandas, openpyxl</td>
+            <td>Industry standard</td>
+        </tr>
+        <tr>
+            <td>PDF Parsing</td>
+            <td>pdfplumber or camelot</td>
+            <td>Good for tabular PDFs</td>
+        </tr>
+        <tr>
+            <td>Excel Output</td>
+            <td>openpyxl or xlsxwriter</td>
+            <td>Native Excel generation</td>
+        </tr>
+        <tr>
+            <td>Config</td>
+            <td>JSON files</td>
+            <td>Simple, editable</td>
+        </tr>
+        <tr>
+            <td>UI (Optional)</td>
+            <td>Streamlit or simple CLI</td>
+            <td>Quick to build</td>
+        </tr>
+    </table>
+
+    <h3>5.3 Module Breakdown</h3>
+    <div class="diagram">/reconciliation_system/
+├── main.py                    # Entry point
+├── /parsers/
+│   ├── csv_parser.py
+│   ├── excel_parser.py
+│   └── pdf_parser.py
+├── /processors/
+│   ├── normalizer.py          # Apply column mappings
+│   ├── currency_converter.py  # FX conversion
+│   └── matcher.py             # Matching engine
+├── /reporters/
+│   └── excel_reporter.py      # Generate output
+├── /config/
+│   ├── psp_mappings.json
+│   └── exchange_rates.json
+└── /tests/
+    └── test_matcher.py</div>
+
+    <h2>6. Configuration Requirements</h2>
+
+    <h3>6.1 PSP Mapping File</h3>
+    <p>For each of the 50 PSPs, define:</p>
+    <ul>
+        <li>Column name mappings</li>
+        <li>Date format</li>
+        <li>Amount format (decimal places, thousands separator)</li>
+        <li>File type expected</li>
+    </ul>
+
+    <h3>6.2 Exchange Rates</h3>
+    <ul>
+        <li>Manual: JSON file updated daily</li>
+        <li>Future: API integration (e.g., Open Exchange Rates, Fixer.io)</li>
+    </ul>
+
+    <h2>7. User Interface</h2>
+
+    <h3>Phase 1: Command Line Interface (CLI)</h3>
+    <pre><code># Run reconciliation for today
+python main.py --date 2026-01-20
+
+# Run with custom input folder
+python main.py --input /path/to/files --date 2026-01-20</code></pre>
+
+    <h3>Phase 1 Alternative: Simple Web UI (Streamlit)</h3>
+    <ul>
+        <li>Upload files via browser</li>
+        <li>Click "Run Reconciliation"</li>
+        <li>Download report</li>
+    </ul>
+
+    <h2>8. Edge Cases & Error Handling</h2>
+    <table>
+        <tr>
+            <th>Scenario</th>
+            <th>Handling</th>
+        </tr>
+        <tr>
+            <td>Unknown PSP file format</td>
+            <td>Log warning, skip file, continue</td>
+        </tr>
+        <tr>
+            <td>Missing column in file</td>
+            <td>Log error with filename, skip file</td>
+        </tr>
+        <tr>
+            <td>Invalid date format</td>
+            <td>Attempt multiple formats, log if unparseable</td>
+        </tr>
+        <tr>
+            <td>PDF parsing failure</td>
+            <td>Log error, suggest manual review</td>
+        </tr>
+        <tr>
+            <td>Duplicate transaction IDs</td>
+            <td>Flag in report, include both</td>
+        </tr>
+        <tr>
+            <td>Missing exchange rate</td>
+            <td>Use most recent available, flag in report</td>
+        </tr>
+    </table>
+
+    <h2>9. Future Enhancements (Phase 2+)</h2>
+    <table>
+        <tr>
+            <th>Feature</th>
+            <th>Description</th>
+            <th>Priority</th>
+        </tr>
+        <tr>
+            <td>API Integrations</td>
+            <td>Connect directly to Stripe, PayPal, etc.</td>
+            <td>High</td>
+        </tr>
+        <tr>
+            <td>CRM Database Connection</td>
+            <td>Query CRM directly instead of file export</td>
+            <td>High</td>
+        </tr>
+        <tr>
+            <td>Scheduled Runs</td>
+            <td>Auto-run daily at specified time</td>
+            <td>Medium</td>
+        </tr>
+        <tr>
+            <td>Email Reports</td>
+            <td>Send summary via email</td>
+            <td>Medium</td>
+        </tr>
+        <tr>
+            <td>Historical Dashboard</td>
+            <td>Track discrepancy trends over time</td>
+            <td>Low</td>
+        </tr>
+        <tr>
+            <td>Multi-user Support</td>
+            <td>Login, permissions, audit trail</td>
+            <td>Low</td>
+        </tr>
+    </table>
+
+    <h2>10. Implementation Plan</h2>
+
+    <h3>Week 1: Foundation</h3>
+    <ul>
+        <li>☐ Set up project structure</li>
+        <li>☐ Build CSV parser with normalization</li>
+        <li>☐ Build Excel parser with normalization</li>
+        <li>☐ Create PSP mapping config for 5 pilot PSPs</li>
+    </ul>
+
+    <h3>Week 2: Core Logic</h3>
+    <ul>
+        <li>☐ Build currency converter</li>
+        <li>☐ Build matching engine</li>
+        <li>☐ Build Excel report generator</li>
+        <li>☐ Test with sample data</li>
+    </ul>
+
+    <h3>Week 3: PDF & Polish</h3>
+    <ul>
+        <li>☐ Add PDF parser for bank statements</li>
+        <li>☐ Add remaining PSP mappings</li>
+        <li>☐ Error handling & logging</li>
+        <li>☐ User documentation</li>
+    </ul>
+
+    <h3>Week 4: Testing & Deployment</h3>
+    <ul>
+        <li>☐ Test with real production files</li>
+        <li>☐ Refine matching logic based on feedback</li>
+        <li>☐ Deploy to team</li>
+        <li>☐ Training</li>
+    </ul>
+
+    <h2>11. Acceptance Criteria</h2>
+    <p><strong>MVP is complete when:</strong></p>
+    <ol>
+        <li>✅ System reads CSV, Excel, PDF files from input folder</li>
+        <li>✅ System normalizes data using configurable PSP mappings</li>
+        <li>✅ System converts all amounts to USD</li>
+        <li>✅ System matches PSP transactions to CRM records</li>
+        <li>✅ System generates Excel report with:
+            <ul>
+                <li>Summary tab</li>
+                <li>Matched transactions</li>
+                <li>Discrepancies (AMOUNT_MISMATCH, PSP_ONLY, CRM_ONLY)</li>
+            </ul>
+        </li>
+        <li>✅ At least 10 PSP mappings configured</li>
+        <li>✅ Process completes in under 5 minutes for 150 transactions</li>
+    </ol>
+
+    <h2>12. Risks & Mitigations</h2>
+    <table>
+        <tr>
+            <th>Risk</th>
+            <th>Impact</th>
+            <th>Mitigation</th>
+        </tr>
+        <tr>
+            <td>PDF parsing unreliable</td>
+            <td>Some bank statements can't be parsed</td>
+            <td>Provide manual entry option, prioritize CSV/Excel sources</td>
+        </tr>
+        <tr>
+            <td>PSP changes file format</td>
+            <td>Parser breaks</td>
+            <td>Version mappings, alert on parse failures</td>
+        </tr>
+        <tr>
+            <td>Exchange rate not updated</td>
+            <td>Incorrect USD amounts</td>
+            <td>Default to previous day, warn in report</td>
+        </tr>
+        <tr>
+            <td>Large file volumes</td>
+            <td>Slow processing</td>
+            <td>Batch processing, progress indicator</td>
+        </tr>
+    </table>
+
+    <h2>13. Open Questions</h2>
+    <ol>
+        <li><strong>CRM Export Format:</strong> What columns are in the CRM export? Need sample file.</li>
+        <li><strong>PDF Samples:</strong> Need sample bank statement PDFs to test parsing.</li>
+        <li><strong>PSP File Samples:</strong> Need sample files from top 10 PSPs to build initial mappings.</li>
+        <li><strong>Amount Tolerance:</strong> Is 95% the right threshold? Should it be configurable?</li>
+        <li><strong>Historical Data:</strong> Do we need to reprocess historical reconciliations?</li>
+    </ol>
+
+    <h2>14. Appendix</h2>
+
+    <h3>A. Sample PSP Mapping Configuration</h3>
+    <pre><code>{
+  "psp_name": "stripe",
+  "file_pattern": "stripe*.csv",
+  "date_format": "%Y-%m-%d",
+  "column_mapping": {
+    "date": "created",
+    "transaction_id": "id",
+    "amount": "amount",
+    "currency": "currency",
+    "name": "customer_email",
+    "type": "type",
+    "status": "status"
+  },
+  "amount_divisor": 100,
+  "notes": "Stripe amounts are in cents"
+}</code></pre>
+
+    <h3>B. Sample CRM Export Expected Format</h3>
+    <pre><code>psp_id,expected_date,expected_amount_usd,customer_name,status
+txn_abc123,2026-01-20,100.00,John Doe,pending
+txn_def456,2026-01-20,250.50,Jane Smith,pending</code></pre>
+
+    <hr>
+    <p><strong>Document Owner:</strong> Reconciliation Team<br>
+    <strong>Last Updated:</strong> January 2026<br>
+    <strong>Next Review:</strong> After Phase 1 completion</p>
+</body>
+</html>
